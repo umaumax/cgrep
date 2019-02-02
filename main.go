@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -122,16 +123,18 @@ func main() {
 		if verbose {
 			fmt.Println("[OUTPUT]")
 		}
+		buf := new(bytes.Buffer)
 		for i := 0; i < lenRunePlaintext+1; i++ {
 			if codes[i] != "" {
-				fmt.Printf("%s", codes[i])
+				fmt.Fprintf(buf, "%s", codes[i])
 			}
 			if i == lenRunePlaintext {
 				break
 			}
-			fmt.Printf("%c", plaintextRunes[i])
+			fmt.Fprintf(buf, "%c", plaintextRunes[i])
 		}
-		fmt.Printf("\n")
+		fmt.Fprintf(buf, "\n")
+		fmt.Printf("%s", buf.String())
 		if verbose {
 			fmt.Println("[END]")
 		}
