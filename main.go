@@ -47,8 +47,13 @@ func main() {
 	if colorListText != "" {
 		colorList := strings.Split(colorListText, ",")
 		colorTable = make([]string, len(colorList))
+		notFoundColorCode := ansi.ColorCode("NOT_FOUND_DUMMY_COLOR_CODE")
 		for i, v := range colorList {
-			colorTable[i] = ansi.ColorCode(v)
+			colorCode := ansi.ColorCode(v)
+			if v != "" && colorCode == notFoundColorCode {
+				log.Fatalf("invalid color text:[%s]\n", v)
+			}
+			colorTable[i] = colorCode
 		}
 	}
 
@@ -104,6 +109,10 @@ func main() {
 					}
 					colorIndex := i - 1
 					code := colorTable[colorIndex%len(colorTable)]
+					// NOTE: skip coloring
+					if code == "" {
+						continue
+					}
 					ansi := ANSI_EscapeCodeRange{len([]rune(plaintext[:start])), len([]rune(plaintext[:end])), string(code)}
 					ansiRanges = append(ansiRanges, ansi)
 				}
