@@ -19,14 +19,27 @@ var (
 
 func init() {
 	flag.BoolVar(&verbose, "verbose", false, "verbose flag")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, ""+
+			os.Args[0]+` [REG pattern with ()]
+  expected e.g. '([0-9]+)\\.([0-9]+)f'\n")
+
+`)
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, `
+* color format
+  * See: https://github.com/mgutz/ansi
+`)
+	}
 }
 
 func main() {
 	flag.Parse()
 	args := flag.Args()
 	if flag.NArg() == 0 {
-		log.Fatalf("[REG pattern with ()] expected e.g. '([0-9]+)\\.([0-9]+)f'\n")
-		return
+		flag.Usage()
+		os.Exit(1)
 	}
 	pattern := args[0]
 	colorListText := ""
