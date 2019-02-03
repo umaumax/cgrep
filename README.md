@@ -4,7 +4,11 @@ color enhanced grep
 
 ## how to use
 ```
+# regex
 git grep --color=always . | cgrep '(".*")' 'yellow' | cgrep '(%[0-9]*[dsf])' 'magenta' | cgrep '([0-9]+)' green
+
+# fixed string
+echo 'ヽ(*゜д゜)ノ' | cgrep -F '゜' blue
 ```
 
 ## how to install
@@ -23,6 +27,4 @@ go get -u "github.com/umaumax/cgrep"
   * `fzf`は1文字ごとではなくとも該当した文字の色を保持する(`fzy`は保持しない)
 
 ## TODO
-* ansi文字出力の効率化
-* helpの記述
-* exampleの記述
+* ansi文字出力の効率化(1文字ごとに色情報を出力している)

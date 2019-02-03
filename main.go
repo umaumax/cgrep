@@ -14,13 +14,15 @@ import (
 )
 
 var (
-	verbose          bool
-	check_regex_flag bool
+	verbose        bool
+	checkRegexFlag bool
+	fixedFlag      bool
 )
 
 func init() {
 	flag.BoolVar(&verbose, "verbose", false, "verbose flag")
-	flag.BoolVar(&check_regex_flag, "n", false, "check regex only")
+	flag.BoolVar(&checkRegexFlag, "n", false, "check regex only")
+	flag.BoolVar(&fixedFlag, "F", false, "use fixed string or not")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, ""+
@@ -48,7 +50,7 @@ func main() {
 	if flag.NArg() > 1 {
 		colorListText = args[1]
 	}
-	if check_regex_flag {
+	if !fixedFlag && checkRegexFlag {
 		_, err := regexp.CompilePOSIX(pattern)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
@@ -57,7 +59,6 @@ func main() {
 		return
 	}
 
-	colorReg := regexp.MustCompilePOSIX(pattern)
 	ansiContSeqReg := regexp.MustCompilePOSIX(`(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]`)
 
 	defaultColorTable := []string{
@@ -77,6 +78,34 @@ func main() {
 				log.Fatalf("invalid color text:[%s]\n", v)
 			}
 			colorTable[i] = colorCode
+		}
+	}
+
+	// NOTE: select submatch index func
+	var findAllStringSubmatchIndex func(s string, n int) (indexes [][]int)
+	if !fixedFlag {
+		colorReg := regexp.MustCompilePOSIX(pattern)
+		findAllStringSubmatchIndex = colorReg.FindAllStringSubmatchIndex
+	} else {
+		keyword := pattern
+		// NOTE: for fixed string
+		findAllStringSubmatchIndex = func(s string, n int) (indexes [][]int) {
+			target := s
+			start := 0
+			for {
+				ret := strings.Index(target, keyword)
+				if ret >= 0 {
+					start += ret
+					end := start + len(keyword)
+					// NOTE: for entire and 1st sub match
+					indexes = append(indexes, []int{start, end, start, end})
+					target = s[end:]
+					start = end
+					continue
+				}
+				break
+			}
+			return
 		}
 	}
 
@@ -119,10 +148,10 @@ func main() {
 			fmt.Println("[INFO] ansi len", len(text), "plaintext string len", len(plaintext), "rune len", len([]rune(plaintext)))
 		}
 
-		m := colorReg.FindAllStringSubmatchIndex(plaintext, -1)
+		m := findAllStringSubmatchIndex(plaintext, -1)
 		if len(m) > 0 {
 			for _, v := range m {
-				// NOTE: [0],[1]: entire index set
+				// NOTE: v[0],v[1]: entire index set
 				for i := 1; i*2 < len(v); i++ {
 					start := v[i*2+0]
 					end := v[i*2+1]
