@@ -14,11 +14,13 @@ import (
 )
 
 var (
-	verbose bool
+	verbose          bool
+	check_regex_flag bool
 )
 
 func init() {
 	flag.BoolVar(&verbose, "verbose", false, "verbose flag")
+	flag.BoolVar(&check_regex_flag, "n", false, "check regex only")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, ""+
@@ -45,6 +47,14 @@ func main() {
 	colorListText := ""
 	if flag.NArg() > 1 {
 		colorListText = args[1]
+	}
+	if check_regex_flag {
+		_, err := regexp.CompilePOSIX(pattern)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+		return
 	}
 
 	colorReg := regexp.MustCompilePOSIX(pattern)
@@ -133,9 +143,11 @@ func main() {
 		}
 
 		// NOTE: only for debug
-		// for i, v := range ansiRanges {
-		// fmt.Printf("%2d: %2d-%2d %q\n", i, v.start, v.end, v.code)
-		// }
+		if verbose {
+			for i, v := range ansiRanges {
+				fmt.Printf("%2d: %2d-%2d %q\n", i, v.start, v.end, v.code)
+			}
+		}
 		codes := make([]string, lenRunePlaintext+1)
 		for _, v := range ansiRanges {
 			for i := v.start; i < v.end; i++ {
