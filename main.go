@@ -90,6 +90,9 @@ func main() {
 		keyword := pattern
 		// NOTE: for fixed string
 		findAllStringSubmatchIndex = func(s string, n int) (indexes [][]int) {
+			if keyword == "" {
+				return nil
+			}
 			target := s
 			start := 0
 			for {
