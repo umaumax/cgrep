@@ -13,7 +13,7 @@ echo 'ヽ(*゜д゜)ノ' | cgrep -F '゜' blue
 
 ## how to install
 ```
-go get -u "github.com/umaumax/cgrep"
+go get -u "github.com/umaumax/cgrep/..."
 ```
 
 ## color format info
