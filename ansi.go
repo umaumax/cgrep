@@ -56,7 +56,6 @@ func (a *ANSIText) String() string {
 			fmt.Fprintf(buf, "%c", a.PlaintextRunes[i])
 		}
 	}
-	fmt.Fprintf(buf, "\n")
 	return buf.String()
 }
 
