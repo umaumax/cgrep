@@ -40,11 +40,13 @@ func (a *ANSIText) DebugANSIRanges() {
 	}
 }
 
-func (a *ANSIText) String() string {
-	codes := make([]string, a.PlainTextRunesLen()+1)
+func (a *ANSIText) TrancateString(n int) string {
+	codes := make([]string, n+1)
 	for _, v := range a.ANSIRanges {
 		for i := v.Start; i < v.End; i++ {
-			codes[i] = v.Code
+			if i < len(codes) {
+				codes[i] = v.Code
+			}
 		}
 	}
 	buf := new(bytes.Buffer)
@@ -56,7 +58,12 @@ func (a *ANSIText) String() string {
 			fmt.Fprintf(buf, "%c", a.PlaintextRunes[i])
 		}
 	}
+	// NOTE: reset per text
+	fmt.Fprintf(buf, ansi.Reset)
 	return buf.String()
+}
+func (a *ANSIText) String() string {
+	return a.TrancateString(a.PlainTextRunesLen())
 }
 
 func ANSITextParse(text string) *ANSIText {
@@ -65,8 +72,8 @@ func ANSITextParse(text string) *ANSIText {
 	plaintextRunes := []rune(plaintext)
 	lenRunePlaintext := len(plaintextRunes)
 	ansiRanges := make([]ANSIEscapeCodeRange, len(ansiCodes)+1)
-	// NOTE: reset per line
-	ansiRanges[0] = ANSIEscapeCodeRange{0, lenRunePlaintext + 1, ansi.Reset}
+	// NOTE: reset per text
+	// ansiRanges[0] = ANSIEscapeCodeRange{0, lenRunePlaintext + 1, ansi.Reset}
 	// NOTE:
 	lenPreIndex := 0
 	preIndex := 0
