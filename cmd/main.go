@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -11,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/mgutz/ansi"
+	"github.com/umaumax/cgrep"
 )
 
 var (
@@ -58,8 +58,6 @@ func main() {
 		}
 		return
 	}
-
-	ansiContSeqReg := regexp.MustCompilePOSIX(`(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]`)
 
 	defaultColorTable := []string{
 		ansi.Green, ansi.Yellow, ansi.Cyan, ansi.Magenta, ansi.Blue, ansi.Red,
@@ -116,42 +114,14 @@ func main() {
 	for scanner.Scan() {
 		text := scanner.Text()
 
-		type ANSI_EscapeCodeRange struct {
-			start int
-			end   int
-			code  string
-		}
-		ansiCodes := ansiContSeqReg.FindAllStringIndex(text, -1)
-		plaintext := ansiContSeqReg.ReplaceAllString(text, "")
-		plaintextRunes := []rune(plaintext)
-		lenRunePlaintext := len(plaintextRunes)
-		ansiRanges := make([]ANSI_EscapeCodeRange, len(ansiCodes)+1)
-		// NOTE: reset per line
-		ansiRanges[0] = ANSI_EscapeCodeRange{0, lenRunePlaintext + 1, ansi.Reset}
-
-		// NOTE:
-		lenPreIndex := 0
-		preIndex := 0
-		for i, v := range ansiCodes {
-			// NOTE: byte index
-			start := v[0]
-			end := v[1]
-			// NOTE: ansi以外の文字のrune indexを蓄積
-			lenPreIndex += len([]rune(text[preIndex:start]))
-			// NOTE: ansi color code
-			code := text[start:end]
-			ansiRanges[i+1] = ANSI_EscapeCodeRange{lenPreIndex, lenRunePlaintext, string(code)}
-			preIndex = end
-		}
-
+		ansiText := cgrep.ANSITextParse(text)
 		if verbose {
 			fmt.Println("[START]")
-			fmt.Println("[rawtext]", text)
-			fmt.Println("[plaintext]", plaintext)
-			fmt.Println("[INFO] ansi len", len(text), "plaintext string len", len(plaintext), "rune len", len([]rune(plaintext)))
+			ansiText.Debug()
 		}
 
-		m := findAllStringSubmatchIndex(plaintext, -1)
+		// NOTE: overwrite ansi color code
+		m := findAllStringSubmatchIndex(ansiText.Plaintext, -1)
 		if len(m) > 0 {
 			for _, v := range m {
 				// NOTE: v[0],v[1]: entire index set
@@ -168,39 +138,21 @@ func main() {
 					if code == "" {
 						continue
 					}
-					ansi := ANSI_EscapeCodeRange{len([]rune(plaintext[:start])), len([]rune(plaintext[:end])), string(code)}
-					ansiRanges = append(ansiRanges, ansi)
+					ansi := cgrep.ANSIEscapeCodeRange{
+						Start: len([]rune(ansiText.Plaintext[:start])),
+						End:   len([]rune(ansiText.Plaintext[:end])),
+						Code:  string(code),
+					}
+					ansiText.ANSIRanges = append(ansiText.ANSIRanges, ansi)
 				}
 			}
 		}
 
 		// NOTE: only for debug
 		if verbose {
-			for i, v := range ansiRanges {
-				fmt.Printf("%2d: %2d-%2d %q\n", i, v.start, v.end, v.code)
-			}
+			ansiText.DebugANSIRanges()
 		}
-		codes := make([]string, lenRunePlaintext+1)
-		for _, v := range ansiRanges {
-			for i := v.start; i < v.end; i++ {
-				codes[i] = v.code
-			}
-		}
-		if verbose {
-			fmt.Println("[OUTPUT]")
-		}
-		buf := new(bytes.Buffer)
-		for i := 0; i < lenRunePlaintext+1; i++ {
-			if codes[i] != "" {
-				fmt.Fprintf(buf, "%s", codes[i])
-			}
-			if i == lenRunePlaintext {
-				break
-			}
-			fmt.Fprintf(buf, "%c", plaintextRunes[i])
-		}
-		fmt.Fprintf(buf, "\n")
-		fmt.Printf("%s", buf.String())
+		fmt.Println(ansiText)
 		if verbose {
 			fmt.Println("[END]")
 		}
