@@ -28,7 +28,7 @@ func init() {
 		fmt.Fprintf(os.Stderr, ""+
 			os.Args[0]+` [REG pattern with ()]
   e.g.
-    cgrep '([0-9]+)\.([0-9]+)f()' 'green,default'
+    cgrep '([0-9]+)\.([0-9]+)f(.?)' 'green,default'
 
 `)
 		flag.PrintDefaults()
