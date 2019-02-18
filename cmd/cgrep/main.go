@@ -27,7 +27,7 @@ func init() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, ""+
 			os.Args[0]+` [REG pattern with ()]
-  expected e.g. '([0-9]+)\\.([0-9]+)f'\n")
+  expected e.g. '([0-9]+)\.([0-9]+)f'
 
 `)
 		flag.PrintDefaults()
