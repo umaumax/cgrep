@@ -24,19 +24,7 @@ func init() {
 	flag.BoolVar(&checkRegexFlag, "n", false, "check regex only")
 	flag.BoolVar(&fixedFlag, "F", false, "use fixed string or not")
 
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, ""+
-			os.Args[0]+` [REG pattern with ()]
-  e.g.
-    cgrep '([0-9]+)\.([0-9]+)f(.?)' 'green,default'
-
-`)
-		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, `
-* color format
-  * See: https://github.com/mgutz/ansi
-`)
-	}
+	flag.Usage = help
 }
 
 func main() {
