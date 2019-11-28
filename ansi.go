@@ -73,7 +73,7 @@ func ANSITextParse(text string) *ANSIText {
 	lenRunePlaintext := len(plaintextRunes)
 	ansiRanges := make([]ANSIEscapeCodeRange, len(ansiCodes)+1)
 	// NOTE: reset per text
-	// ansiRanges[0] = ANSIEscapeCodeRange{0, lenRunePlaintext + 1, ansi.Reset}
+	ansiRanges[0] = ANSIEscapeCodeRange{0, lenRunePlaintext + 1, ansi.Reset}
 	// NOTE:
 	lenPreIndex := 0
 	preIndex := 0
