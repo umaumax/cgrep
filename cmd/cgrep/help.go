@@ -12,7 +12,8 @@ func help() {
 	fmt.Fprintf(os.Stderr, ""+
 		os.Args[0]+` <regex pattern with ()> [colors with ,]
   e.g.
-    cgrep '([0-9]+)\.([0-9]+)f(.?)' 'green,default'
+    echo 'float x = 10.0f;' | cgrep '(([0-9]+)\.([0-9]+)f)' 'magenta'
+    echo 'g++ -std=c++11 -o main.o -c main.cpp' | cgrep '(-o [^ ]+)' 'yellow+b'
 
 `)
 	flag.PrintDefaults()
