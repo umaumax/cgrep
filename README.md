@@ -28,3 +28,9 @@ go get -u "github.com/umaumax/cgrep/..."
 
 ## TODO
 * ansi文字出力の効率化(1文字ごとに色情報を出力している)
+
+## ISSUE
+```
+git grep --color=always . | cgrep '(".*")' 'yellow:white' | cgrep '(%[0-9]*[dsf])' 'magenta+B' | cgrep '([0-9]+)' green
+```
+としたときに，背景の白がlineの終端まで続いてしまっている問題がある
